@@ -8,6 +8,7 @@
 #include <typeindex>
 
 inline std::mutex s_timeMutex;
+inline std::mutex s_logMutex;
 
 inline void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo)
 {
@@ -94,6 +95,8 @@ std::string CheckOperator(const T& object)
 template <typename... Args>
 void Log(Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
 	logFile << "[" << GetCurrentTimeString() << "] ";
@@ -107,6 +110,8 @@ void Log(Args&&... args)
 template <typename... Args>
 void LogColor(const char* color, Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
 	logFile << "[" << GetCurrentTimeString() << "] ";
@@ -122,12 +127,16 @@ void LogColor(const char* color, Args&&... args)
 template <typename... Args>
 void Output(Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+
 	(std::cout << ... << CheckOperator(args)) << ANSI_RESET << '\n';
 }
 
 template <typename... Args>
 void OutputColor(const char* color, Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+
 	std::cout << color;
 	(std::cout << ... << CheckOperator(args));
 	std::cout << ANSI_RESET << '\n';
@@ -136,12 +145,16 @@ void OutputColor(const char* color, Args&&... args)
 template <typename... Args>
 void OutputErr(Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+
 	(std::cerr << ... << CheckOperator(args)) << ANSI_RESET << '\n';
 }
 
 template <typename... Args>
 void OutputErrColor(const char* color, Args&&... args)
 {
+	std::lock_guard<std::mutex> lock(s_logMutex);
+	
 	std::cerr << color;
 	(std::cerr << ... << CheckOperator(args));
 	std::cerr << ANSI_RESET << '\n';
