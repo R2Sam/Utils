@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <ostream>
 #include <sstream>
 #include <typeindex>
 
@@ -75,21 +76,21 @@ struct HasPrintMethod<T, std::void_t<decltype(std::declval<const T&>().Print())>
 };
 
 template <typename T>
-std::string CheckOperator(const T& object)
+void CheckOperator(std::ostream& os, const T& object)
 {
 	if constexpr (HasOstreamOperator<T>::value)
 	{
-		std::ostringstream oss;
-		oss << object;
-		return oss.str();
+		os << object;
+		return;
 	}
 
 	else if constexpr (HasPrintMethod<T>::value)
 	{
-		return object.Print();
+		os << object.Print();
+		return;
 	}
 
-	return "INVALID";
+	os << "INVALID";
 }
 
 template <typename... Args>
@@ -100,11 +101,13 @@ void Log(Args&&... args)
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
 	logFile << "[" << GetCurrentTimeString() << "] ";
-	(logFile << ... << CheckOperator(args)) << '\n';
+	(CheckOperator(logFile, args), ...);
+	logFile << '\n';
 #endif
 
 	std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
-	(std::cerr << ... << CheckOperator(args)) << ANSI_RESET << '\n';
+	(CheckOperator(std::cerr, args), ...);
+	std::cerr << ANSI_RESET << '\n';
 }
 
 template <typename... Args>
@@ -115,12 +118,13 @@ void LogColor(const char* color, Args&&... args)
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
 	logFile << "[" << GetCurrentTimeString() << "] ";
-	(logFile << ... << CheckOperator(args)) << '\n';
+	(CheckOperator(logFile, args), ...);
+	logFile << '\n';
 #endif
 
 	std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
 	std::cerr << color;
-	(std::cerr << ... << CheckOperator(args));
+	(CheckOperator(std::cerr, args), ...);
 	std::cerr << ANSI_RESET << '\n';
 }
 
@@ -128,8 +132,9 @@ template <typename... Args>
 void Output(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
-
-	(std::cout << ... << CheckOperator(args)) << ANSI_RESET << '\n';
+	
+	(CheckOperator(std::cout, args), ...);
+	std::cout << ANSI_RESET << '\n';
 }
 
 template <typename... Args>
@@ -138,7 +143,7 @@ void OutputColor(const char* color, Args&&... args)
 	std::lock_guard<std::mutex> lock(s_logMutex);
 
 	std::cout << color;
-	(std::cout << ... << CheckOperator(args));
+	(CheckOperator(std::cout, args), ...);
 	std::cout << ANSI_RESET << '\n';
 }
 
@@ -147,7 +152,8 @@ void OutputErr(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
 
-	(std::cerr << ... << CheckOperator(args)) << ANSI_RESET << '\n';
+	(CheckOperator(std::cerr, args), ...);
+	std::cerr << ANSI_RESET << '\n';
 }
 
 template <typename... Args>
@@ -156,7 +162,7 @@ void OutputErrColor(const char* color, Args&&... args)
 	std::lock_guard<std::mutex> lock(s_logMutex);
 	
 	std::cerr << color;
-	(std::cerr << ... << CheckOperator(args));
+	(CheckOperator(std::cerr, args), ...);
 	std::cerr << ANSI_RESET << '\n';
 }
 
