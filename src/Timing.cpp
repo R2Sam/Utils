@@ -1,5 +1,7 @@
 #include "Timing.hpp"
 
+#include "Log/Logger.hpp"
+
 Stopwatch::Stopwatch()
 {
 }
@@ -51,7 +53,7 @@ double Stopwatch::Stop(const std::string& text)
 	double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
 	if (!m_name.empty())
 	{
-		Log(m_name, " took: ", microseconds * 0.001, " ms ", text);
+		Logger::Write(m_name, " took: ", microseconds * 0.001, " ms ", text);
 	}
 
 	return microseconds * 0.001;

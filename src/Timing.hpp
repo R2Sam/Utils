@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Log/Log.hpp"
-
 #include "Types.hpp"
 
 #include <chrono>
