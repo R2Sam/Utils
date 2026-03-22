@@ -2,4 +2,5 @@
 *.txt linguist-generated
 
 include/** linguist-generated
+reflect/** linguist-generated
 lib/** linguist-generated

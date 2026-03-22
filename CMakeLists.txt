@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(Utils
   VERSION 1.0.0
-  LANGUAGES CXX
+  LANGUAGES C CXX
 )
 
 # ------------------------------------------------------------------------------
@@ -85,11 +85,17 @@ file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
 
 list(FILTER SRC EXCLUDE REGEX ".*/main\\.cpp$")
 
-add_library(utils ${SRC})
+add_library(utils
+  ${SRC}
+  reflect/src/reflectcpp.cpp
+  reflect/src/reflectcpp_json.cpp
+  reflect/src/yyjson.c)
 
 target_include_directories(utils
   PUBLIC
     src
+    reflect/src
+    reflect/include
 )
 
 target_compile_options(utils PRIVATE

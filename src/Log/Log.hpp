@@ -8,6 +8,9 @@
 #include <sstream>
 #include <typeindex>
 
+#include "rfl.hpp"
+#include "rfl/json.hpp"
+
 inline std::mutex s_logMutex;
 
 void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo);
@@ -29,7 +32,8 @@ inline const char* const LOG_RED = "\033[91m";
 inline const char* const LOG_WHITE = "\033[97m";
 
 template <typename T>
-concept HasOstreamOperator = requires(std::ostream& os, const T& value) {
+concept HasOstreamOperator = requires(std::ostream& os, const T& value) // NOLINT
+{
 	{ os << value } -> std::same_as<std::ostream&>;
 };
 
@@ -54,7 +58,48 @@ void CheckOperator(std::ostream& os, const T& object)
 		return;
 	}
 
-	os << "INVALID";
+	os << "[INVALID]";
+}
+
+template <typename T>
+std::string CleanJson(const T& object)
+{
+	std::string json = rfl::json::write<rfl::SnakeCaseToCamelCase>(object);
+	json.erase(std::remove(json.begin(), json.end(), '{'), json.end());
+	json.erase(std::remove(json.begin(), json.end(), '}'), json.end());
+	json.erase(std::remove(json.begin(), json.end(), '\"'), json.end());
+
+	size_t pos = 0;
+	while ((pos = json.find(':', pos)) != std::string::npos)
+	{
+		if (pos + 1 < json.size() && json[pos + 1] != ' ')
+		{
+			json.insert(pos + 1, " ");
+			pos += 2;
+		}
+
+		else
+		{
+			pos++;
+		}
+	}
+
+	pos = 0;
+	while ((pos = json.find(',', pos)) != std::string::npos)
+	{
+		if (pos + 1 < json.size() && json[pos + 1] != ' ')
+		{
+			json.insert(pos + 1, " ");
+			pos += 2;
+		}
+
+		else
+		{
+			pos++;
+		}
+	}
+
+	return json;
 }
 
 template <typename... Args>
