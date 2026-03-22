@@ -4,68 +4,24 @@
 
 #include "Types.hpp"
 
+#include <chrono>
 #include <deque>
+#include <functional>
 
-class Timer
+class Stopwatch
 {
 public:
 
-	Timer()
-	{
-	}
+	Stopwatch();
+	Stopwatch(const std::string& name);
 
-	Timer(const std::string& name)
-	{
-		m_name = name;
-		m_start = std::chrono::steady_clock::now();
-	}
+	~Stopwatch();
 
-	~Timer()
-	{
-		if (!m_done)
-		{
-			Stop();
-		}
-	}
+	void Start();
+	void Start(const std::string& name);
 
-	void Start()
-	{
-		Start("");
-	}
-
-	void Start(const std::string& name)
-	{
-		Stop();
-
-		m_name = name;
-		m_start = std::chrono::steady_clock::now();
-
-		m_done = false;
-	}
-
-	double Stop()
-	{
-		return Stop("");
-	}
-
-	double Stop(const std::string& text)
-	{
-		if (m_done)
-		{
-			return 0.0;
-		}
-
-		m_end = std::chrono::steady_clock::now();
-		m_done = true;
-
-		double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
-		if (!m_name.empty())
-		{
-			Log(m_name, " took: ", microseconds * 0.001, " ms ", text);
-		}
-
-		return microseconds * 0.001;
-	}
+	double Stop();
+	double Stop(const std::string& text);
 
 private:
 
@@ -75,6 +31,22 @@ private:
 	bool m_done = true;
 
 	std::string m_name;
+};
+
+class Timer
+{
+public:
+
+	Timer(const u64 timeMs, const std::function<void()>& callback = nullptr);
+	~Timer();
+
+	bool Check();
+
+private:
+
+	u64 m_timeMs = 0;
+	std::chrono::time_point<std::chrono::steady_clock> m_start;
+	std::function<void()> m_callback;
 };
 
 template <typename T>

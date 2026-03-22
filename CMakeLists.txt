@@ -85,34 +85,34 @@ file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
 
 list(FILTER SRC EXCLUDE REGEX ".*/main\\.cpp$")
 
-add_library(utils INTERFACE ${SRC})
+add_library(utils ${SRC})
 
 target_include_directories(utils
-  INTERFACE
+  PUBLIC
     src
 )
 
-target_compile_options(utils INTERFACE
+target_compile_options(utils PRIVATE
   ${COMMON_FLAGS}
   $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
   $<$<CONFIG:Release>:${RELEASE_FLAGS}>
 )
 
 target_link_libraries(utils
-  INTERFACE
+  PRIVATE
     ${SYSTEM_LIBS}
 )
 
-target_link_options(utils INTERFACE
+target_link_options(utils PRIVATE
   $<$<CONFIG:Release>:${RELEASE_LINKER_FLAGS}>
 )
 
 if (EMSCRIPTEN)
-  target_compile_options(utils INTERFACE
+  target_compile_options(utils PRIVATE
     -s USE_PTHREADS
   )
 
-  target_link_options(utils INTERFACE
+  target_link_options(utils PRIVATE
     -s ASYNCIFY
     -s PROXY_TO_PTHREAD
   )

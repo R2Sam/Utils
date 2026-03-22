@@ -8,37 +8,11 @@
 #include <sstream>
 #include <typeindex>
 
-inline std::mutex s_timeMutex;
 inline std::mutex s_logMutex;
 
-inline void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo)
-{
-	std::lock_guard<std::mutex> lock(s_timeMutex);
-	std::tm* result = localtime(&timeInput);
-	if (result != nullptr)
-	{
-		timeInfo = *result;
-	}
-}
+void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo);
 
-inline std::string GetCurrentTimeString()
-{
-	auto now = std::chrono::system_clock::now();
-	auto inTimeT = std::chrono::system_clock::to_time_t(now);
-	auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-
-	std::tm timeInfo;
-	std::stringstream ss;
-
-	GetThreadSafeLocalTime(inTimeT, timeInfo);
-
-	char buffer[9];
-	strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeInfo);
-
-	ss << buffer << '.' << std::setw(3) << std::setfill('0') << static_cast<int>(milliseconds.count());
-
-	return ss.str();
-}
+std::string GetCurrentTimeString();
 
 inline const char* const ANSI_RESET = "\033[0m";
 inline const char* const ANSI_SAVE_CURSOR = "\033[s";
@@ -54,37 +28,27 @@ inline const char* const LOG_YELLOW = "\033[93m";
 inline const char* const LOG_RED = "\033[91m";
 inline const char* const LOG_WHITE = "\033[97m";
 
-template <typename, typename = void>
-struct HasOstreamOperator : std::false_type
-{
+template <typename T>
+concept HasOstreamOperator = requires(std::ostream& os, const T& value) {
+	{ os << value } -> std::same_as<std::ostream&>;
 };
 
 template <typename T>
-struct HasOstreamOperator<T, std::void_t<decltype(std::declval<std::ostream&>() << std::declval<const T&>())>>
-: std::true_type
+concept HasPrintMethod = requires(const T& value) // NOLINT
 {
-};
-
-template <typename, typename = void>
-struct HasPrintMethod : std::false_type
-{
-};
-
-template <typename T>
-struct HasPrintMethod<T, std::void_t<decltype(std::declval<const T&>().Print())>> : std::true_type
-{
+	{ value.Print() } -> std::convertible_to<std::string>;
 };
 
 template <typename T>
 void CheckOperator(std::ostream& os, const T& object)
 {
-	if constexpr (HasOstreamOperator<T>::value)
+	if constexpr (HasOstreamOperator<T>)
 	{
 		os << object;
 		return;
 	}
 
-	else if constexpr (HasPrintMethod<T>::value)
+	else if constexpr (HasPrintMethod<T>)
 	{
 		os << object.Print();
 		return;
@@ -132,7 +96,7 @@ template <typename... Args>
 void Output(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
-	
+
 	(CheckOperator(std::cout, args), ...);
 	std::cout << ANSI_RESET << '\n';
 }
@@ -160,7 +124,7 @@ template <typename... Args>
 void OutputErrColor(const char* color, Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
-	
+
 	std::cerr << color;
 	(CheckOperator(std::cerr, args), ...);
 	std::cerr << ANSI_RESET << '\n';
@@ -185,34 +149,10 @@ class Ansi
 
 public:
 
-	Ansi()
-	{
-		void* hOutput = GetStdHandle(-11);
-		unsigned long outMode;
-		GetConsoleMode(hOutput, &outMode);
-		SetConsoleMode(hOutput, outMode | 0x0004);
+	Ansi();
 
-		void* hError = GetStdHandle(-12);
-		unsigned long errMode;
-		GetConsoleMode(hError, &errMode);
-		SetConsoleMode(hError, errMode | 0x0004);
-	}
-
-	~Ansi()
-	{
-		void* hOutput = GetStdHandle(-11);
-		unsigned long outMode;
-		GetConsoleMode(hOutput, &outMode);
-		SetConsoleMode(hOutput, outMode & ~0x0004);
-
-		void* hError = GetStdHandle(-12);
-		unsigned long errMode;
-		GetConsoleMode(hError, &errMode);
-		SetConsoleMode(hError, errMode & ~0x0004);
-	}
+	~Ansi();
 };
-
-inline Ansi ansi;
 
 #endif
 
@@ -228,16 +168,7 @@ std::string Demangle()
 	return (status == 0) ? res.get() : name;
 }
 
-inline std::string Demangle(const std::type_index& type)
-{
-	const char* name = type.name();
-
-	int status = -4;
-
-	std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
-
-	return (status == 0) ? res.get() : name;
-}
+std::string Demangle(const std::type_index& type);
 
 template <typename T>
 std::string DemangleWithoutNamespace()
@@ -253,15 +184,4 @@ std::string DemangleWithoutNamespace()
 	return demangled;
 }
 
-inline std::string DemangleWithoutNamespace(const std::type_index& type)
-{
-	std::string demangled = Demangle(type);
-
-	size_t pos = demangled.find_last_of("::");
-	if (pos != std::string::npos)
-	{
-		return demangled.substr(pos + 1);
-	}
-
-	return demangled;
-}
+std::string DemangleWithoutNamespace(const std::type_index& type);
