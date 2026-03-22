@@ -123,19 +123,8 @@ private:
 	{230, 41, 55}, {255, 0, 255}};
 };
 
-class TraceFunction
-{
-public:
-
-	TraceFunction(const std::string& message = "",
-	const std::source_location location = std::source_location::current());
-	~TraceFunction();
-
-private:
-
-	std::string m_message;
-	std::source_location m_location;
-};
+void TraceFunction(const std::string& message = "",
+const std::source_location location = std::source_location::current());
 
 template <typename T>
 void TraceValue(const T& object, const char* objectName)
