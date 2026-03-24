@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdfloat>
 #include <stdint.h>
 
 /* signed types */
@@ -15,8 +16,10 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 
 /* floating point types */
-using f32 = float;
-using f64 = double;
+using f16 = std::float16_t;
+using f32 = std::float32_t;
+using f64 = std::float64_t;
+using f128 = std::float128_t;
 
 /* boolean types */
 using b8 = u8;
