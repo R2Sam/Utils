@@ -94,6 +94,7 @@ add_library(utils
 target_include_directories(utils
   PUBLIC
     src
+    include
     reflect/src
     reflect/include
 )
