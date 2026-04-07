@@ -99,6 +99,16 @@ struct Vec2
 		return *this;
 	}
 
+	constexpr bool operator==(const Vec2& rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
+	}
+
+	constexpr bool operator!=(const Vec2& rhs) const
+	{
+		return !(*this == rhs);
+	}
+
 	constexpr Vector2 Raylib() const
 	{
 		return Vector2{static_cast<float>(x), static_cast<float>(y)};
