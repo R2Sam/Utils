@@ -1,16 +1,12 @@
 #pragma once
-#include <chrono>
 #include <cxxabi.h>
-#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <ostream>
-#include <sstream>
 #include <typeindex>
 
 #include "rfl.hpp"
 #include "rfl/json.hpp"
-
 inline std::mutex s_logMutex;
 
 void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo);

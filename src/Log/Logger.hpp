@@ -5,6 +5,7 @@
 #include <fstream>
 #include <mutex>
 #include <source_location>
+#include <vector>
 
 /**
  * @brief Console and file logging levels
