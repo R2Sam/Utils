@@ -1,126 +1,176 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(Utils
-  VERSION 1.0.0
-  LANGUAGES C CXX
+project(
+	Utils
+	VERSION 0.0.1
+	LANGUAGES CXX
 )
 
-# ------------------------------------------------------------------------------
-# C++ standard & global settings
-# ------------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# -------------------------
+# Global configuration
+# -------------------------
+include(FetchContent)
 
+set(FETCHCONTENT_QUIET ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+# Detect Emscripten
+set(IS_EMSCRIPTEN OFF)
 
-# ------------------------------------------------------------------------------
-# Platform detection
-# ------------------------------------------------------------------------------
-if (WIN32)
-  set(SYSTEM_LIBS
-    opengl32
-    gdi32
-    winmm
-    ws2_32
-    gomp
-    -static
-  )
-
-  set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -Og -g3 -gdwarf-4)
-  set(RELEASE_LINKER_FLAGS -s -mwindows)
-
-elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
-  set(SYSTEM_LIBS
-    GL
-    m
-    pthread
-    dl
-    rt
-    X11
-    gomp
-  )
-
-  set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -O0 -g3 -gdwarf-4 -fno-omit-frame-pointer -fno-inline)
-  set(RELEASE_LINKER_FLAGS -s)
-
-elseif (UNIX AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
-  message(FATAL_ERROR "Linux ARM is not supported")
-
-else()
-  message(FATAL_ERROR "Unsupported platform")
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+	set(IS_EMSCRIPTEN ON)
 endif()
 
-# ------------------------------------------------------------------------------
-# Common compiler warnings & flags
-# ------------------------------------------------------------------------------
-set(COMMON_FLAGS
-  -Wall
-  -Wextra
-  -pedantic
-  -fopenmp
-  -fmax-errors=5
-  -Wno-missing-field-initializers
-  -Wno-narrowing
-  -Wno-enum-compare
-  -Wno-reorder
-  -Wno-shadow
-  -Wno-deprecated-declarations
+# -------------------------
+# Options
+# -------------------------
+add_library(Utils_options INTERFACE)
+add_library(Utils::options ALIAS Utils_options)
+
+target_compile_features(
+	Utils_options
+	INTERFACE
+		cxx_std_23
 )
 
-# ------------------------------------------------------------------------------
+# -------------------------
+# Safety
+# -------------------------
+add_library(Utils_safety INTERFACE)
+add_library(Utils::safety ALIAS Utils_safety)
+
+target_compile_options(
+	Utils_safety
+	INTERFACE
+		-fstack-protector-strong
+		-D_GLIBCXX_ASSERTIONS
+
+		$<$<CONFIG:Debug>:
+			-O0
+			-g3
+			-gdwarf-4
+			-fno-inline
+			-fno-omit-frame-pointer
+
+			$<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+                -fsanitize=address
+                -fsanitize=undefined
+            >
+		>
+
+		$<$<CONFIG:Release>:
+            -O3
+
+            $<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+                -fsanitize-trap=undefined
+            >
+        >
+)
+
+target_link_options(
+	Utils_safety
+	INTERFACE
+		$<$<AND:$<CONFIG:Debug>,$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+			-fsanitize=address
+			-fsanitize=undefined
+		>
+
+		$<$<AND:$<CONFIG:Release>,$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+		>
+)
+
+# -------------------------
+# Platform
+# -------------------------
+add_library(Utils_platform INTERFACE)
+add_library(Utils::platform ALIAS Utils_platform)
+
+target_link_libraries(
+	Utils_platform
+	INTERFACE
+		$<$<PLATFORM_ID:Windows>:
+		>
+)
+
+target_link_options(
+	Utils_platform
+	INTERFACE
+		$<$<PLATFORM_ID:Windows>:
+			-static
+		>
+)
+
+target_link_libraries(
+	Utils_platform
+	INTERFACE
+		$<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+		>
+)
+
+# -------------------------
 # Utils static library
-# ------------------------------------------------------------------------------
-file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
-  src/*.cpp
-  src/*.hpp
-)
-
+# -------------------------
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS src/*.cpp)
 list(FILTER SRC EXCLUDE REGEX ".*/main\\.cpp$")
 
-add_library(utils
-  ${SRC}
-  reflect/src/reflectcpp.cpp
-  reflect/src/reflectcpp_json.cpp
-  reflect/src/yyjson.c)
-
-target_include_directories(utils
-  PUBLIC
-    src
-    include
-    reflect/src
-    reflect/include
+add_library(
+	utils 
+	STATIC
+		${SRC}
+		reflect/src/reflectcpp.cpp
+		reflect/src/reflectcpp_json.cpp
+		reflect/src/yyjson.c
 )
 
-target_compile_options(utils PRIVATE
-  ${COMMON_FLAGS}
-  $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
-  $<$<CONFIG:Release>:${RELEASE_FLAGS}>
+target_include_directories(
+	utils
+	PUBLIC
+		include
+		src
+		reflect/include
+	PRIVATE
+		reflect/src
 )
 
-target_link_libraries(utils
-  PRIVATE
-    ${SYSTEM_LIBS}
+target_compile_options(
+	utils
+	PRIVATE
+		-Wall
+		-Wextra
+		-pedantic
+		-fmax-errors=5
+
+		-Wno-missing-field-initializers
+		-Wno-narrowing
+		-Wno-enum-compare
+		-Wno-reorder
+		-Wno-shadow
+		-Wno-deprecated-declarations
 )
 
-target_link_options(utils PRIVATE
-  $<$<CONFIG:Release>:${RELEASE_LINKER_FLAGS}>
+target_link_libraries(
+	utils
+	PRIVATE
+		Utils::options
+		Utils::safety
+		Utils::platform
 )
 
-if (EMSCRIPTEN)
-  target_compile_options(utils PRIVATE
-    -s USE_PTHREADS
-  )
+# -------------------------
+# Emscripten
+# -------------------------
+target_compile_options(
+	utils
+	PRIVATE
+		$<$<BOOL:${IS_EMSCRIPTEN}>:
+		>
+)
 
-  target_link_options(utils PRIVATE
-    -s ASYNCIFY
-    -s PROXY_TO_PTHREAD
-  )
-endif()
+target_link_options(
+	utils
+	PRIVATE
+		$<$<BOOL:${IS_EMSCRIPTEN}>:
+		>
+)

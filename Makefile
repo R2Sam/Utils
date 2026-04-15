@@ -1,46 +1,69 @@
-UNAME := $(shell uname -s)
-JOBS := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+# ======================
+# Basic setup
+# ======================
 
-ifeq ($(UNAME), Linux)
-debug:
-	mkdir -p build && cmake -B build -DCMAKE_BUILD_TYPE=Debug  && cd build && $(MAKE) -j${JOBS} -s
-	git diff -U0 HEAD^ | clang-format-diff -p1
-	git diff --name-only | grep .cpp | xargs -r run-clang-tidy -quiet -j${JOBS} -p build
-	
+BUILD_DIR ?= build
+SRC_DIR   ?= .
+JOBS      := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
-release:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j${JOBS} -s
+.PHONY: configure debug release build tests clean format fix fixChanges
 
-clear:
-	-mv build/compile_commands.json compile_commands.json
-	-rm -r build
-	-mkdir build
-	-mv compile_commands.json build/compile_commands.json
+# ======================
+# Platform detection
+# ======================
 
-format:
-	find src -name "*.cpp" -o -name "*.hpp" | xargs -P${JOBS} clang-format --dry-run --Werror
-	run-clang-tidy -quiet -j${JOBS} -p build $(CURDIR)/src/
+CMAKE_GENERATOR :=
 
-fix:
-	run-clang-tidy -quiet -fix -j${JOBS} -p build $(CURDIR)/src/
-	find src -name "*.cpp" -o -name "*.hpp" | xargs -P${JOBS} clang-format -i --Werror
-
-else
-debug:
-	-mkdir build
-	cd build && cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j${JOBS} -s
-
-release:
-	-mkdir build
-	cd build && cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j${JOBS} -s
-
-clear:
-	-mv build/compile_commands.json compile_commands.json
-	-rmdir /s /q build
-	-mkdir build
-	-mv compile_commands.json build/compile_commands.json
-
+ifeq ($(OS), Windows_NT)
+	CMAKE_GENERATOR := -G "MinGW Makefiles"
 endif
 
+# ======================
+# Build targets
+# ======================
+
+debug:
+	cmake -S $(SRC_DIR) -B $(BUILD_DIR) \
+	-DFETCHCONTENT_BASE_DIR=../.deps \
+	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+	-DCMAKE_BUILD_TYPE=Debug \
+	$(CMAKE_GENERATOR)
+	cmake --build $(BUILD_DIR) -j $(JOBS)
+
+release:
+	cmake -S $(SRC_DIR) -B $(BUILD_DIR) \
+		-DFETCHCONTENT_BASE_DIR=../.deps \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+		$(CMAKE_GENERATOR)
+	cmake --build $(BUILD_DIR) -j $(JOBS)
+
+# ======================
+# Clean (CMake-safe)
+# ======================
+
 clean:
-	$(MAKE) -s -C build clean
+	cmake --build $(BUILD_DIR) --target clean
+
+# ======================
+# Formatting / Tidy
+# ======================
+
+format:
+	find $(CURDIR)/src -type f \( -name "*.cpp" -o -name "*.hpp" \) \
+	| xargs -P$(JOBS) clang-format --dry-run --Werror
+	run-clang-tidy -quiet -j$(JOBS) -p $(BUILD_DIR) $(CURDIR)/src
+
+fix:
+	run-clang-tidy -quiet -fix -j$(JOBS) -p $(BUILD_DIR) $(CURDIR)/src
+	find $(CURDIR)/src -type f \( -name "*.cpp" -o -name "*.hpp" \) \
+	| xargs -P$(JOBS) clang-format -i --Werror
+
+fixChanges:
+	git diff --cached --name-only --diff-filter=d \
+	| grep -E '\.(cpp|hpp)$$' \
+	| xargs -r run-clang-tidy -quiet -fix -j$(JOBS) -p $(BUILD_DIR)
+
+	git diff --cached --name-only --diff-filter=d \
+	| grep -E '\.(cpp|hpp)$$' \
+	| xargs -r -P$(JOBS) clang-format -i --Werror
