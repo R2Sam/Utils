@@ -161,7 +161,22 @@ struct Vec2
 
 	constexpr operator std::string() const
 	{
-		return std::format("{} {}", x, y);
+		return std::format("[{}, {}]", x, y);
+	}
+};
+
+template <typename T>
+struct std::formatter<Vec2<T>>
+{
+	constexpr auto parse(std::format_parse_context& context) // NOLINT
+	{
+		return context.begin();
+	}
+
+	template <typename Context>
+	auto format(const Vec2<T>& value, Context& context) const
+	{
+		return std::format_to(context.out(), "[{}, {}]", value.x, value.y);
 	}
 };
 
@@ -333,5 +348,20 @@ struct Vec3
 	constexpr operator std::string() const
 	{
 		return std::format("{} {} {}", x, y, z);
+	}
+};
+
+template <typename T>
+struct std::formatter<Vec3<T>>
+{
+	constexpr auto parse(std::format_parse_context& context) // NOLINT
+	{
+		return context.begin();
+	}
+
+	template <typename Context>
+	auto format(const Vec3<T>& value, Context& context) const
+	{
+		return std::format_to(context.out(), "[{}, {}, {}]", value.x, value.y, value.z);
 	}
 };

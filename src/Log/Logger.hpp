@@ -2,8 +2,10 @@
 
 #include "Log/Log.hpp"
 #include "Types.hpp"
+#include <format>
 #include <fstream>
 #include <mutex>
+#include <print>
 #include <source_location>
 #include <stacktrace>
 #include <vector>
@@ -88,16 +90,18 @@ public:
 
 		std::lock_guard<std::mutex> lock(s_mutex);
 
+		std::string prefix = std::format("[{}] [{}] ", GetCurrentTimeString(), LevelName(levelIn));
+
 		if (s_file.is_open())
 		{
-			s_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
-			(CheckOperator(s_file, args), ...);
-			s_file << '\n';
+			std::print(s_file, "{}", prefix);
+			(std::print(s_file, "{}", CheckOperator(std::forward<Args>(args))), ...);
+			std::println(s_file, "");
 		}
 
-		std::cerr << LevelColor(levelIn) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
-		(CheckOperator(std::cerr, args), ...);
-		std::cerr << ANSI_RESET << '\n';
+		std::print(std::cerr, "{}{}", LevelColor(levelIn), prefix);
+		(std::print(std::cerr, "{}", CheckOperator(std::forward<Args>(args))), ...);
+		std::println(std::cerr, "{}", ANSI_RESET);
 	}
 
 	/**

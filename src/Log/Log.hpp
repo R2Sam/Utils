@@ -34,10 +34,31 @@ concept HasOstreamOperator = requires(std::ostream& os, const T& value) // NOLIN
 };
 
 template <typename T>
+concept HasPrintFormatter = requires(const T& value) {
+	{ std::format("{}", value) } -> std::same_as<std::string>;
+};
+
+template <typename T>
 concept HasStringOperator = requires(const T& value) // NOLINT
 {
 	{ static_cast<std::string>(value) } -> std::same_as<std::string>;
 };
+
+template <typename T>
+std::string CheckOperator(const T& object)
+{
+	if constexpr (HasPrintFormatter<T>)
+	{
+		return std::format("{}", object);
+	}
+
+	else if constexpr (HasStringOperator<T>)
+	{
+		return static_cast<std::string>(object);
+	}
+
+	return "[INVALID]";
+}
 
 template <typename T>
 void CheckOperator(std::ostream& os, const T& object)
