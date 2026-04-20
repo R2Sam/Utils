@@ -156,6 +156,9 @@ target_link_libraries(
 		Utils::options
 		Utils::safety
 		Utils::platform
+
+	PUBLIC
+		stdc++exp
 )
 
 # -------------------------

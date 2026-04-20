@@ -5,6 +5,7 @@
 #include <fstream>
 #include <mutex>
 #include <source_location>
+#include <stacktrace>
 #include <vector>
 
 /**
@@ -124,44 +125,39 @@ private:
 	{230, 41, 55}, {255, 0, 255}};
 };
 
-template <LogLevel level = LogLevel::TRACE>
+template <LogLevel level = LogLevel::TRACE, bool stack = false>
 void TraceFunction(const std::string& message = "",
 const std::source_location location = std::source_location::current())
 {
-	if (message.empty())
+	if constexpr (stack)
 	{
-		Logger::Write<level>(location.function_name());
+		const auto trace = std::stacktrace::current();
+		std::string traceText;
+
+		for (u32 i = 1; i < trace.size(); ++i)
+		{
+			const auto line = trace[i];
+			traceText +=
+			line.description() + " at: " + line.source_file() + ":" + std::to_string(line.source_line()) + '\n';
+		}
+
+		Logger::Write<level>(message, '\n', traceText);
 	}
 
 	else
 	{
-		Logger::Write<level>(location.function_name(), ", ", message);
+		Logger::Write<level>(location.function_name(), " at: ", location.file_name(), "\n", message);
 	}
 }
 
-template <typename T>
-void TraceValue(const T& object, const char* objectName)
+template <typename Object, LogLevel level = LogLevel::TRACE>
+void TraceValue(const Object& object, const char* objectName)
 {
-	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " value: ", object);
+	Logger::Write<level>(Demangle(typeid(object)), "\n", objectName, " value: ", object);
 }
 
-template <typename T>
-void TraceAddress(const T& object, const char* objectName)
+template <typename Object, LogLevel level = LogLevel::TRACE>
+void TraceAddress(const Object& object, const char* objectName)
 {
-	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
-}
-
-void DebugFunction(const std::string& message = "",
-const std::source_location location = std::source_location::current());
-
-template <typename T>
-void DebugValue(const T& object, const char* objectName)
-{
-	Logger::Write<LogLevel::DEBUG>(Demangle(typeid(object)), " ", objectName, " value: ", object);
-}
-
-template <typename T>
-void DebugAddress(const T& object, const char* objectName)
-{
-	Logger::Write<LogLevel::DEBUG>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
+	Logger::Write<level>(Demangle(typeid(object)), "\n", objectName, " address: ", &object);
 }
