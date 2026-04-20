@@ -120,6 +120,7 @@ std::string CleanJson(const T& object)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void Log(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
@@ -137,6 +138,7 @@ void Log(Args&&... args)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void LogColor(const char* color, Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
@@ -155,6 +157,7 @@ void LogColor(const char* color, Args&&... args)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void Output(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
@@ -164,6 +167,7 @@ void Output(Args&&... args)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void OutputColor(const char* color, Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
@@ -174,6 +178,7 @@ void OutputColor(const char* color, Args&&... args)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void OutputErr(Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
@@ -183,6 +188,7 @@ void OutputErr(Args&&... args)
 }
 
 template <typename... Args>
+[[deprecated("Use Logger::Write() instead")]]
 void OutputErrColor(const char* color, Args&&... args)
 {
 	std::lock_guard<std::mutex> lock(s_logMutex);
