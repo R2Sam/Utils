@@ -71,16 +71,3 @@ std::string Logger::RgbToAnsi(const Color color)
 {
 	return std::format("\033[38;2;{};{};{}m", color.r, color.g, color.b);
 }
-
-void TraceFunction(const std::string& message, const std::source_location location)
-{
-	if (message.empty())
-	{
-		Logger::Write<LogLevel::TRACE>(location.function_name());
-	}
-
-	else
-	{
-		Logger::Write<LogLevel::TRACE>(location.function_name(), ", ", message);
-	}
-}

@@ -34,9 +34,9 @@ concept HasOstreamOperator = requires(std::ostream& os, const T& value) // NOLIN
 };
 
 template <typename T>
-concept HasPrintMethod = requires(const T& value) // NOLINT
+concept HasStringOperator = requires(const T& value) // NOLINT
 {
-	{ value.Print() } -> std::convertible_to<std::string>;
+	{ static_cast<std::string>(value) } -> std::same_as<std::string>;
 };
 
 template <typename T>
@@ -48,9 +48,9 @@ void CheckOperator(std::ostream& os, const T& object)
 		return;
 	}
 
-	else if constexpr (HasPrintMethod<T>)
+	else if constexpr (HasStringOperator<T>)
 	{
-		os << object.Print();
+		os << static_cast<std::string>(object);
 		return;
 	}
 

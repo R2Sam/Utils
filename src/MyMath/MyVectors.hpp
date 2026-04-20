@@ -3,6 +3,7 @@
 #include "raylib.h"
 
 #include <cmath>
+#include <format>
 
 template <typename T>
 	requires(std::is_arithmetic_v<T>)
@@ -14,6 +15,12 @@ struct Vec2
 	constexpr Vec2(const T& x = 0, const T& y = 0) :
 	x(x),
 	y(y)
+	{
+	}
+
+	constexpr Vec2(const Vector2 vector) :
+	x(vector.x),
+	y(vector.y)
 	{
 	}
 
@@ -151,6 +158,11 @@ struct Vec2
 		}
 		return *this;
 	}
+
+	constexpr operator std::string() const
+	{
+		return std::format("{} {}", x, y);
+	}
 };
 
 template <typename T>
@@ -165,6 +177,13 @@ struct Vec3
 	x(x),
 	y(y),
 	z(z)
+	{
+	}
+
+	constexpr Vec3(const Vector3 vector) :
+	x(vector.x),
+	y(vector.y),
+	z(vector.z)
 	{
 	}
 
@@ -309,5 +328,10 @@ struct Vec3
 			z /= len;
 		}
 		return *this;
+	}
+
+	constexpr operator std::string() const
+	{
+		return std::format("{} {} {}", x, y, z);
 	}
 };

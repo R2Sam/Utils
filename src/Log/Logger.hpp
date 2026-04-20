@@ -124,8 +124,20 @@ private:
 	{230, 41, 55}, {255, 0, 255}};
 };
 
+template <LogLevel level = LogLevel::TRACE>
 void TraceFunction(const std::string& message = "",
-const std::source_location location = std::source_location::current());
+const std::source_location location = std::source_location::current())
+{
+	if (message.empty())
+	{
+		Logger::Write<level>(location.function_name());
+	}
+
+	else
+	{
+		Logger::Write<level>(location.function_name(), ", ", message);
+	}
+}
 
 template <typename T>
 void TraceValue(const T& object, const char* objectName)
@@ -138,6 +150,9 @@ void TraceAddress(const T& object, const char* objectName)
 {
 	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
 }
+
+void DebugFunction(const std::string& message = "",
+const std::source_location location = std::source_location::current());
 
 template <typename T>
 void DebugValue(const T& object, const char* objectName)
