@@ -106,15 +106,7 @@ struct Vec2
 		return *this;
 	}
 
-	constexpr bool operator==(const Vec2& rhs) const
-	{
-		return x == rhs.x && y == rhs.y;
-	}
-
-	constexpr bool operator!=(const Vec2& rhs) const
-	{
-		return !(*this == rhs);
-	}
+	constexpr bool operator<=>(const Vec2&) const = default;
 
 	constexpr Vector2 Raylib() const
 	{
@@ -242,15 +234,7 @@ struct Vec3
 		return Vec3(-x, -y, -z);
 	}
 
-	constexpr bool operator==(const Vec3& rhs) const
-	{
-		return x == rhs.x && y == rhs.y && z == rhs.z;
-	}
-
-	constexpr bool operator!=(const Vec3& rhs) const
-	{
-		return x != rhs.x || y != rhs.y || z != rhs.z;
-	}
+	constexpr bool operator<=>(const Vec3&) const = default;
 
 	constexpr Vec3& operator+=(const Vec3& rhs)
 	{
