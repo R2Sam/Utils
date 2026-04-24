@@ -7,8 +7,11 @@
 #include <mutex>
 #include <print>
 #include <source_location>
-#include <stacktrace>
 #include <vector>
+
+#ifndef __EMSCRIPTEN__
+#include <stacktrace>
+#endif
 
 /**
  * @brief Console and file logging levels
@@ -135,6 +138,7 @@ const std::source_location location = std::source_location::current())
 {
 	if constexpr (stack)
 	{
+#ifndef __EMSCRIPTEN__
 		const auto trace = std::stacktrace::current();
 		std::string traceText;
 
@@ -146,6 +150,7 @@ const std::source_location location = std::source_location::current())
 		}
 
 		Logger::Write<level>(message, '\n', traceText);
+#endif
 	}
 
 	else

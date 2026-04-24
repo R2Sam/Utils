@@ -162,7 +162,9 @@ target_link_libraries(
 		Utils::platform
 
 	PUBLIC
-		stdc++exp
+		$<$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>:
+			stdc++exp
+		>
 )
 
 # -------------------------
@@ -179,5 +181,6 @@ target_link_options(
 	utils
 	PRIVATE
 		$<$<BOOL:${IS_EMSCRIPTEN}>:
+			-sASSERTIONS
 		>
 )
