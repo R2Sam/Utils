@@ -132,9 +132,8 @@ private:
 	{230, 41, 55}, {255, 0, 255}};
 };
 
-template <LogLevel level = LogLevel::TRACE, bool stack = false>
-void TraceFunction(const std::string& message = "",
-const std::source_location location = std::source_location::current())
+template <bool stack = false>
+std::string GetTrace(const std::source_location location = std::source_location::current())
 {
 	if constexpr (stack)
 	{
@@ -149,14 +148,28 @@ const std::source_location location = std::source_location::current())
 			line.description() + " at: " + line.source_file() + ":" + std::to_string(line.source_line()) + '\n';
 		}
 
-		Logger::Write<level>(message, '\n', traceText);
+		return traceText;
 #endif
 	}
 
-	else
+	return std::string(location.function_name()) + " at: " + location.file_name() + "\n";
+}
+
+template <LogLevel level = LogLevel::TRACE, bool stack = false>
+void TraceFunction(const std::string& message = "",
+const std::source_location location = std::source_location::current())
+{
+	if constexpr (stack)
 	{
-		Logger::Write<level>(location.function_name(), " at: ", location.file_name(), "\n", message);
+#ifndef __EMSCRIPTEN__
+		Logger::Write<level>(message, '\n', GetTrace<stack>());
+		return;
+#else
+		Logger::Write<level>("Cannot do stack trace in emscripten");
+#endif
 	}
+
+	Logger::Write<level>(GetTrace<stack>());
 }
 
 template <typename Object, LogLevel level = LogLevel::TRACE>

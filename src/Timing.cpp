@@ -59,6 +59,19 @@ double Stopwatch::Stop(const std::string& text)
 	return microseconds * 0.001;
 }
 
+double Stopwatch::Check() const
+{
+	if (m_done)
+	{
+		return 0;
+	}
+
+	auto now = std::chrono::steady_clock::now();
+	double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_start).count();
+
+	return microseconds * 0.001;
+}
+
 Timer::Timer(const u64 timeMs, const std::function<void()>& callback) :
 m_timeMs(timeMs),
 m_callback(callback)

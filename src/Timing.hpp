@@ -21,6 +21,8 @@ public:
 	double Stop();
 	double Stop(const std::string& text);
 
+	double Check() const;
+
 private:
 
 	std::chrono::time_point<std::chrono::steady_clock> m_start;

@@ -162,9 +162,9 @@ target_link_libraries(
 		Utils::platform
 
 	PUBLIC
-		$<$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>:
-			stdc++exp
-		>
+		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,17>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+		    stdc++exp
+	    >
 )
 
 # -------------------------
