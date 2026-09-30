@@ -4,6 +4,7 @@
 #include "Types.hpp"
 #include <format>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <print>
 #include <source_location>
@@ -41,6 +42,15 @@ public:
 		u32 g = 0;
 		u32 b = 0;
 	};
+
+	inline static constexpr Color RED = {230, 41, 55};
+	inline static constexpr Color GREEN = {0, 228, 48};
+	inline static constexpr Color YELLOW = {253, 249, 0};
+	inline static constexpr Color BLUE = {0, 150, 255};
+	inline static constexpr Color CYAN = {0, 255, 255};
+	inline static constexpr Color MAGENTA = {255, 0, 255};
+	inline static constexpr Color WHITE = {200, 200, 200};
+	inline static constexpr Color GRAY = {150, 150, 150};
 
 	/**
 	 * @brief Sets minimum log level
@@ -105,6 +115,47 @@ public:
 		std::print(std::cerr, "{}{}", LevelColor(levelIn), prefix);
 		(std::print(std::cerr, "{}", CheckOperator(std::forward<Args>(args))), ...);
 		std::println(std::cerr, "{}", ANSI_RESET);
+	}
+
+	/**
+	 * @brief Writes a message to stdout without a trailing newline
+	 *
+	 * Uses the same formatting rules as Write, but prints to stdout,
+	 * adds no prefix, no log level, and no trailing newline.
+	 *
+	 * @tparam Args Strings and other printable
+	 * @param args Values to be printed separated by commas
+	 */
+
+	template <typename... Args>
+	static void Print(Args&&... args)
+	{
+		std::lock_guard<std::mutex> lock(s_mutex);
+
+		(std::print(std::cout, "{}", CheckOperator(std::forward<Args>(args))), ...);
+		std::cout.flush();
+	}
+
+	/**
+	 * @brief Writes a colored message to stdout without a trailing newline
+	 *
+	 * Uses the same formatting rules as Print, but wraps the output in
+	 * the ANSI escape for the given color and resets afterwards.
+	 *
+	 * @param color Foreground color to use
+	 * @tparam Args Strings and other printable
+	 * @param args Values to be printed separated by commas
+	 */
+
+	template <typename... Args>
+	static void Print(const Color color, Args&&... args)
+	{
+		std::lock_guard<std::mutex> lock(s_mutex);
+
+		std::print(std::cout, "{}", RgbToAnsi(color));
+		(std::print(std::cout, "{}", CheckOperator(std::forward<Args>(args))), ...);
+		std::print(std::cout, "{}", ANSI_RESET);
+		std::cout.flush();
 	}
 
 	/**
