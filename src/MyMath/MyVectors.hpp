@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef NO_RAYLIB
 #include "raylib.h"
+#endif
 
 #include <cmath>
 #include <format>
@@ -18,11 +20,13 @@ struct Vec2
 	{
 	}
 
+#ifndef NO_RAYLIB
 	constexpr Vec2(const Vector2 vector) :
 	x(vector.x),
 	y(vector.y)
 	{
 	}
+#endif
 
 	constexpr Vec2 operator+(const Vec2& rhs) const
 	{
@@ -108,36 +112,38 @@ struct Vec2
 
 	constexpr bool operator<=>(const Vec2&) const = default;
 
+#ifndef NO_RAYLIB
 	constexpr Vector2 Raylib() const
 	{
 		return Vector2{static_cast<float>(x), static_cast<float>(y)};
 	}
+#endif
 
 	constexpr T Dot(const Vec2& rhs) const
 	{
-		return x * rhs.x + y * rhs.y;
+		return (x * rhs.x) + (y * rhs.y);
 	}
 
 	constexpr Vec2 Cross(const Vec2& rhs) const
 	{
-		return Vec2(x * rhs.y - y * rhs.x, y * rhs.x - x * rhs.y);
+		return Vec2((x * rhs.y) - (y * rhs.x), (y * rhs.x) - (x * rhs.y));
 	}
 
 	constexpr T Length() const
 	{
-		return std::sqrt(x * x + y * y);
+		return std::sqrt((x * x) + y * y);
 	}
 
 	constexpr T LengthSqr() const
 	{
-		return x * x + y * y;
+		return (x * x) + (y * y);
 	}
 
 	constexpr T Distance(const Vec2& other) const
 	{
 		T dx = other.x - x;
 		T dy = other.y - y;
-		return std::sqrt(dx * dx + dy * dy);
+		return std::sqrt((dx * dx) + (dy * dy));
 	}
 
 	constexpr Vec2& Normalize()
@@ -187,12 +193,14 @@ struct Vec3
 	{
 	}
 
+#ifndef NO_RAYLIB
 	constexpr Vec3(const Vector3 vector) :
 	x(vector.x),
 	y(vector.y),
 	z(vector.z)
 	{
 	}
+#endif
 
 	constexpr Vec3 operator+(const Vec3& rhs) const
 	{
@@ -284,29 +292,31 @@ struct Vec3
 		return *this;
 	}
 
+#ifndef NO_RAYLIB
 	constexpr Vector3 Raylib() const
 	{
 		return Vector3{static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
 	}
+#endif
 
 	constexpr T Dot(const Vec3& rhs) const
 	{
-		return x * rhs.x + y * rhs.y + z * rhs.z;
+		return (x * rhs.x) + (y * rhs.y) + (z * rhs.z);
 	}
 
 	constexpr Vec3 Cross(const Vec3& rhs) const
 	{
-		return Vec3(y * rhs.z - z * rhs.y, z * rhs.x - x * rhs.z, x * rhs.y - y * rhs.x);
+		return Vec3((y * rhs.z) - (z * rhs.y), (z * rhs.x) - (x * rhs.z), (x * rhs.y) - (y * rhs.x));
 	}
 
 	constexpr T Length() const
 	{
-		return std::sqrt(x * x + y * y + z * z);
+		return std::sqrt((x * x) + (y * y) + (z * z));
 	}
 
 	constexpr T LengthSqr() const
 	{
-		return x * x + y * y + z * z;
+		return (x * x) + (y * y) + (z * z);
 	}
 
 	constexpr T Distance(const Vec3& other) const
@@ -314,7 +324,7 @@ struct Vec3
 		T dx = other.x - x;
 		T dy = other.y - y;
 		T dz = other.z - z;
-		return std::sqrt(dx * dx + dy * dy + dz * dz);
+		return std::sqrt((dx * dx) + (dy * dy) + (dz * dz));
 	}
 
 	constexpr Vec3& Normalize()
