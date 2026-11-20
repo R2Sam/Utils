@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <print>
 
 #define ASSERT
 
@@ -12,9 +13,9 @@
 template <typename... Args>
 inline void AssertFail(const char* expr, const char* file, int line, const char* func, Args&&... args)
 {
-	std::fprintf(stderr, "[ASSERTION FAILED]\n");
-	std::fprintf(stderr, "  Expression: %s\n", expr);
-	std::fprintf(stderr, "  Location:   %s:%d   (%s)\n", file, line, func);
+	std::println(stderr, "[ASSERTION FAILED]");
+	std::println(stderr, "  Expression: {}", expr);
+	std::println(stderr, "  Location:   {}:{}   ({})", file, line, func);
 
 	if constexpr (sizeof...(args) > 0)
 	{

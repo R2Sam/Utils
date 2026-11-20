@@ -4,7 +4,7 @@ static std::mutex s_timeMutex;
 
 void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo)
 {
-	std::lock_guard<std::mutex> lock(s_timeMutex);
+	std::scoped_lock lock(s_timeMutex);
 	std::tm* result = localtime(&timeInput);
 	if (result != nullptr)
 	{
@@ -23,10 +23,11 @@ std::string GetCurrentTimeString()
 
 	GetThreadSafeLocalTime(inTimeT, timeInfo);
 
-	char buffer[9];
-	strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeInfo);
+	std::array<char, 9> buffer{};
+	;
+	strftime(buffer.data(), sizeof(buffer), "%H:%M:%S", &timeInfo);
 
-	ss << buffer << '.' << std::setw(3) << std::setfill('0') << static_cast<int>(milliseconds.count());
+	ss << buffer.data() << '.' << std::setw(3) << std::setfill('0') << static_cast<int>(milliseconds.count());
 
 	return ss.str();
 }

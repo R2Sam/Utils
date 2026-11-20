@@ -2,9 +2,7 @@
 
 #include "Log/Logger.hpp"
 
-Stopwatch::Stopwatch()
-{
-}
+Stopwatch::Stopwatch() = default;
 
 Stopwatch::Stopwatch(const std::string& name)
 {
@@ -12,7 +10,7 @@ Stopwatch::Stopwatch(const std::string& name)
 	m_start = std::chrono::steady_clock::now();
 }
 
-Stopwatch::~Stopwatch()
+Stopwatch::~Stopwatch() // NOLINT(bugprone-exception-escape)
 {
 	if (!m_done)
 	{
@@ -35,12 +33,12 @@ void Stopwatch::Start(const std::string& name)
 	m_done = false;
 }
 
-double Stopwatch::Stop()
+f64 Stopwatch::Stop()
 {
 	return Stop("");
 }
 
-double Stopwatch::Stop(const std::string& text)
+f64 Stopwatch::Stop(const std::string& text)
 {
 	if (m_done)
 	{
@@ -50,7 +48,7 @@ double Stopwatch::Stop(const std::string& text)
 	m_end = std::chrono::steady_clock::now();
 	m_done = true;
 
-	double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
+	f64 microseconds = static_cast<f64>(std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count());
 	if (!m_name.empty())
 	{
 		Logger::Write(m_name, " took: ", microseconds * 0.001, " ms ", text);
@@ -59,7 +57,7 @@ double Stopwatch::Stop(const std::string& text)
 	return microseconds * 0.001;
 }
 
-double Stopwatch::Check() const
+f64 Stopwatch::Check() const
 {
 	if (m_done)
 	{
@@ -67,7 +65,7 @@ double Stopwatch::Check() const
 	}
 
 	auto now = std::chrono::steady_clock::now();
-	double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_start).count();
+	f64 microseconds = static_cast<f64>(std::chrono::duration_cast<std::chrono::microseconds>(now - m_start).count());
 
 	return microseconds * 0.001;
 }
@@ -81,9 +79,9 @@ m_callback(callback)
 
 Timer::~Timer()
 {
-	i64 differance =
+	i64 differance = static_cast<i64>(
 	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_start).count() -
-	m_timeMs;
+	m_timeMs);
 	if (differance >= 0)
 	{
 		if (m_callback)
@@ -95,9 +93,9 @@ Timer::~Timer()
 
 bool Timer::Check()
 {
-	i64 differance =
+	i64 differance = static_cast<i64>(
 	std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_start).count() -
-	m_timeMs;
+	m_timeMs);
 	if (differance >= 0)
 	{
 		if (m_callback)

@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cxxabi.h>
 #include <iostream>
 #include <mutex>
@@ -82,9 +83,9 @@ template <typename T>
 std::string CleanJson(const T& object)
 {
 	std::string json = rfl::json::write<rfl::SnakeCaseToCamelCase>(object);
-	json.erase(std::remove(json.begin(), json.end(), '{'), json.end());
-	json.erase(std::remove(json.begin(), json.end(), '}'), json.end());
-	json.erase(std::remove(json.begin(), json.end(), '\"'), json.end());
+	std::erase(json, '{');
+	std::erase(json, '}');
+	std::erase(json, '"');
 
 	size_t pos = 0;
 	while ((pos = json.find(':', pos)) != std::string::npos)
@@ -123,7 +124,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void Log(Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
@@ -141,7 +142,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void LogColor(const char* color, Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 #ifdef LOGFILE
 	std::ofstream logFile("log.txt", std::ios_base::app);
@@ -160,7 +161,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void Output(Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 	(CheckOperator(std::cout, args), ...);
 	std::cout << ANSI_RESET << '\n';
@@ -170,7 +171,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void OutputColor(const char* color, Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 	std::cout << color;
 	(CheckOperator(std::cout, args), ...);
@@ -181,7 +182,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void OutputErr(Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 	(CheckOperator(std::cerr, args), ...);
 	std::cerr << ANSI_RESET << '\n';
@@ -191,7 +192,7 @@ template <typename... Args>
 [[deprecated("Use Logger::Write() instead")]]
 void OutputErrColor(const char* color, Args&&... args)
 {
-	std::lock_guard<std::mutex> lock(s_logMutex);
+	std::scoped_lock lock(s_logMutex);
 
 	std::cerr << color;
 	(CheckOperator(std::cerr, args), ...);
@@ -231,7 +232,7 @@ std::string Demangle()
 
 	int status = -4;
 
-	std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name.c_str(), NULL, NULL, &status), std::free};
+	std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status), std::free};
 
 	return (status == 0) ? res.get() : name;
 }

@@ -1,21 +1,30 @@
-BasedOnStyle: Microsoft
+# Neutral base — all meaningful style choices are specified below.
+BasedOnStyle: LLVM
 
-# Indentation settings
+# Indentation
 IndentWidth: 4
+TabWidth: 4
 UseTab: Always
 ContinuationIndentWidth: 0
 ConstructorInitializerIndentWidth: 0
 PackConstructorInitializers: Never
 NamespaceIndentation: All
 AlignAfterOpenBracket: DontAlign
+AlignOperands: DontAlign
 LambdaBodyIndentation: OuterScope
+IndentCaseLabels: false
+IndentGotoLabels: false
 
 # Braces and line breaks
 BreakBeforeBraces: Allman
 BreakConstructorInitializers: AfterColon
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
 AlwaysBreakTemplateDeclarations: true
 BinPackParameters: true
+BinPackArguments: true
 AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
 
 # Line length
 ColumnLimit: 120
@@ -23,16 +32,23 @@ ColumnLimit: 120
 # Pointer and reference alignment
 PointerAlignment: Left
 ReferenceAlignment: Left
+DerivePointerAlignment: false
 
 # Short statements/functions
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortLambdasOnASingleLine: None
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
 
 # Access modifiers
 AccessModifierOffset: -4
 EmptyLineAfterAccessModifier: Always
+
+# Includes
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
 
 # Namespace
 FixNamespaceComments: false

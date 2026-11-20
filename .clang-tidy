@@ -1,7 +1,29 @@
+# -----------------------------------------------------------------------------
+# clang-tidy configuration
+#
+# Families enabled:
+#   clang-analyzer-*   static analysis (real bugs)
+#   clang-diagnostic-* compiler warnings surfaced through clang-tidy
+#   bugprone-*         bug-prone constructs
+#   modernize-*        C++11..C++23 modernisation
+#   performance-*      performance anti-patterns
+#   readability-*      readability / consistency
+#   misc-*             misc hygiene
+#
+# Warnings-as-errors is ON globally. Use `run-clang-tidy -fix` for the safe
+# auto-fixes; anything left over fails the build.
+# -----------------------------------------------------------------------------
+
 Checks: >
   -*,
   clang-analyzer-*,
   clang-diagnostic-*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-throwing-static-initialization,
+  modernize-*,
+  -modernize-use-trailing-return-type,
   performance-*,
   readability-*,
   -readability-avoid-const-params-in-decls,
@@ -10,32 +32,84 @@ Checks: >
   -readability-magic-numbers,
   -readability-implicit-bool-conversion,
   -readability-use-anyofallof,
+  -readability-else-after-return,
+  -readability-function-cognitive-complexity,
   misc-*,
   -misc-const-correctness,
   -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-unused-parameters,
-  -misc-use-anonymous-namespace,-warnings-as-errors,
+  -misc-use-anonymous-namespace
 
 WarningsAsErrors: '*'
+
+# Use the project's .clang-format when emitting fixes
+FormatStyle: file
+# Pick up this config from nested .clang-tidy files
+InheritParentConfig: true
+
+# Analyse only headers under a src/ directory, and never headers from
+# third-party locations (.deps/, lib/, include/). The .deps/ exclusion is
+# critical: FetchContent puts Utils in .deps/utils/, and Utils has its own
+# src/ directory, which would otherwise match a naive `.*/src/.*` filter.
+HeaderFilterRegex: '^(?!.*/(\.deps|lib|include)/).*/src/.*'
+# Belt-and-braces (clang-tidy 17+; silently ignored on older versions)
+ExcludeHeaderFilterRegex: '.*/(\.deps|lib|include)/.*'
 
 ExtraArgs:
   - -Wno-unused-command-line-argument
   - -Wno-unused-parameter
 
-HeaderFilterRegex: '.*\Utils/src\/.*$'
-
 CheckOptions:
+  # ---------------------------------------------------------------------------
+  # Identifier naming
+  # ---------------------------------------------------------------------------
+  - key: readability-identifier-naming.IgnoreMainLikeFunctions
+    value: true
+
+  # Types
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+
+  # Functions
   - key: readability-identifier-naming.FunctionCase
     value: CamelCase
   - key: readability-identifier-naming.ParameterCase
     value: camelBack
-  - key: readability-identifier-naming.VariableCase
+
+  # Variables
+  - key: readability-identifier-naming.LocalVariableCase
     value: camelBack
+  - key: readability-identifier-naming.LocalConstantCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: s_
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.StaticVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.StaticVariablePrefix
+    value: s_
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: camelBack
+
+  # Class members
   - key: readability-identifier-naming.MemberCase
     value: camelBack
   - key: readability-identifier-naming.ProtectedMemberCase
@@ -46,17 +120,7 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
     value: m_
-  - key: readability-identifier-naming.StaticVariablePrefix
-    value: s_
-  - key: readability-identifier-naming.StaticVariableCase
-    value: camelBack
-  - key: readability-identifier-naming.GlobalVariablePrefix
-    value: s_
-  - key: readability-identifier-naming.GlobalVariableCase
-    value: camelBack
-  - key: readability-identifier-naming.EnumCase
-    value: CamelCase
-  - key: readability-identifier-naming.EnumConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.GlobalConstantCase
+
+  # Macros
+  - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE

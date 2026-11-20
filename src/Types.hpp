@@ -3,6 +3,8 @@
 // #include <stdfloat>
 #include <stdint.h>
 
+#include <numbers>
+
 /* signed types */
 using i8 = int8_t;
 using i16 = int16_t;
@@ -32,7 +34,7 @@ using b64 = u64;
 #define KB(x) ((x) << 10)
 #define MB(x) ((x) << 20)
 #define GB(x) ((x) << 30)
-#define TB(x) (((u64)x) << 40)
+#define TB(x) (((u64)(x)) << 40)
 
 /* signed constants */
 static const i8 MAX_I8 = 127;
@@ -55,7 +57,7 @@ static const f32 MAX_F32 = 3.402823466e+38f;
 static const f32 MIN_F32 = -3.402823466e+38f;
 static const f32 SMALLEST_POSITIVE_F32 = 1.1754943508e-38f;
 static const f32 EPSILON_F32 = 5.96046448e-8f;
-static const f32 PI_F32 = 3.14159265359f;
+static const f32 PI_F32 = std::numbers::pi_v<float>;
 static const f32 HALF_PI_F32 = 1.5707963267f;
 static const f64 MAX_F64 = 1.79769313486231e+308;
 static const f64 MIN_F64 = -1.79769313486231e+308;

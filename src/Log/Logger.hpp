@@ -43,14 +43,14 @@ public:
 		u32 b = 0;
 	};
 
-	inline static constexpr Color RED = {230, 41, 55};
-	inline static constexpr Color GREEN = {0, 228, 48};
-	inline static constexpr Color YELLOW = {253, 249, 0};
-	inline static constexpr Color BLUE = {0, 150, 255};
-	inline static constexpr Color CYAN = {0, 255, 255};
-	inline static constexpr Color MAGENTA = {255, 0, 255};
-	inline static constexpr Color WHITE = {200, 200, 200};
-	inline static constexpr Color GRAY = {150, 150, 150};
+	static constexpr Color RED = {.r = 230, .g = 41, .b = 55};
+	static constexpr Color GREEN = {.r = 0, .g = 228, .b = 48};
+	static constexpr Color YELLOW = {.r = 253, .g = 249, .b = 0};
+	static constexpr Color BLUE = {.r = 0, .g = 150, .b = 255};
+	static constexpr Color CYAN = {.r = 0, .g = 255, .b = 255};
+	static constexpr Color MAGENTA = {.r = 255, .g = 0, .b = 255};
+	static constexpr Color WHITE = {.r = 200, .g = 200, .b = 200};
+	static constexpr Color GRAY = {.r = 150, .g = 150, .b = 150};
 
 	/**
 	 * @brief Sets minimum log level
@@ -101,7 +101,7 @@ public:
 		}
 #endif
 
-		std::lock_guard<std::mutex> lock(s_mutex);
+		std::scoped_lock lock(s_mutex);
 
 		std::string prefix = std::format("[{}] [{}] ", GetCurrentTimeString(), LevelName(levelIn));
 
@@ -130,7 +130,7 @@ public:
 	template <typename... Args>
 	static void Print(Args&&... args)
 	{
-		std::lock_guard<std::mutex> lock(s_mutex);
+		std::scoped_lock lock(s_mutex);
 
 		(std::print(std::cout, "{}", CheckOperator(std::forward<Args>(args))), ...);
 		std::cout.flush();
@@ -150,7 +150,7 @@ public:
 	template <typename... Args>
 	static void Print(const Color color, Args&&... args)
 	{
-		std::lock_guard<std::mutex> lock(s_mutex);
+		std::scoped_lock lock(s_mutex);
 
 		std::print(std::cout, "{}", RgbToAnsi(color));
 		(std::print(std::cout, "{}", CheckOperator(std::forward<Args>(args))), ...);
@@ -179,8 +179,9 @@ private:
 	inline static LogLevel s_level = LogLevel::DEBUG;
 	inline static std::mutex s_mutex;
 
-	inline static std::vector<Color> s_levelColors = {{200, 200, 200}, {0, 255, 255}, {0, 228, 48}, {253, 249, 0},
-	{230, 41, 55}, {255, 0, 255}};
+	inline static std::vector<Color> s_levelColors = {{.r = 200, .g = 200, .b = 200}, {.r = 0, .g = 255, .b = 255},
+	{.r = 0, .g = 228, .b = 48}, {.r = 253, .g = 249, .b = 0}, {.r = 230, .g = 41, .b = 55},
+	{.r = 255, .g = 0, .b = 255}};
 };
 
 template <bool stack = false>
