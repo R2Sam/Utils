@@ -8,11 +8,12 @@
 
 #include "rfl.hpp"
 #include "rfl/json.hpp"
-inline std::mutex s_logMutex;
+#include "utils_export.h"
+UTILS_EXPORT extern std::mutex s_logMutex;
 
-void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo);
+UTILS_EXPORT void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo);
 
-std::string GetCurrentTimeString();
+UTILS_EXPORT std::string GetCurrentTimeString();
 
 inline const char* const ANSI_RESET = "\033[0m";
 inline const char* const ANSI_SAVE_CURSOR = "\033[s";
@@ -213,7 +214,7 @@ extern "C"
 
 #endif
 
-class Ansi
+class UTILS_EXPORT Ansi
 {
 
 public:
@@ -237,7 +238,7 @@ std::string Demangle()
 	return (status == 0) ? res.get() : name;
 }
 
-std::string Demangle(const std::type_index& type);
+UTILS_EXPORT std::string Demangle(const std::type_index& type);
 
 template <typename T>
 std::string DemangleWithoutNamespace()
@@ -253,4 +254,4 @@ std::string DemangleWithoutNamespace()
 	return demangled;
 }
 
-std::string DemangleWithoutNamespace(const std::type_index& type);
+UTILS_EXPORT std::string DemangleWithoutNamespace(const std::type_index& type);

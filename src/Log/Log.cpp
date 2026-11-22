@@ -2,6 +2,9 @@
 
 static std::mutex s_timeMutex;
 
+// Definition for the exported extern declared in Log.hpp.
+std::mutex s_logMutex;
+
 void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo)
 {
 	std::scoped_lock lock(s_timeMutex);

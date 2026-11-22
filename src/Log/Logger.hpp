@@ -2,6 +2,7 @@
 
 #include "Log/Log.hpp"
 #include "Types.hpp"
+#include "utils_export.h"
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -32,7 +33,7 @@ enum class LogLevel : u8
  * @brief Thread safe logging utility with differing levels for both console and file
  */
 
-class Logger
+class UTILS_EXPORT Logger
 {
 public:
 
@@ -175,13 +176,11 @@ private:
 
 	static std::string RgbToAnsi(const Color color);
 
-	inline static std::ofstream s_file;
-	inline static LogLevel s_level = LogLevel::DEBUG;
-	inline static std::mutex s_mutex;
+	static std::ofstream s_file;
+	static LogLevel s_level;
+	static std::mutex s_mutex;
 
-	inline static std::vector<Color> s_levelColors = {{.r = 200, .g = 200, .b = 200}, {.r = 0, .g = 255, .b = 255},
-	{.r = 0, .g = 228, .b = 48}, {.r = 253, .g = 249, .b = 0}, {.r = 230, .g = 41, .b = 55},
-	{.r = 255, .g = 0, .b = 255}};
+	static std::vector<Color> s_levelColors;
 };
 
 template <bool stack = false>

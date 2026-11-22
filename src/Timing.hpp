@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Types.hpp"
+#include "utils_export.h"
 
 #include <chrono>
 #include <deque>
 #include <functional>
 
-class Stopwatch
+class UTILS_EXPORT Stopwatch
 {
 public:
 
@@ -33,7 +34,7 @@ private:
 	std::string m_name;
 };
 
-class Timer
+class UTILS_EXPORT Timer
 {
 public:
 

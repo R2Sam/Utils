@@ -1,5 +1,12 @@
 #include "Logger.hpp"
 
+// Single definitions live here so every module shares one Logger state.
+std::ofstream Logger::s_file;
+LogLevel Logger::s_level = LogLevel::DEBUG;
+std::mutex Logger::s_mutex;
+std::vector<Logger::Color> Logger::s_levelColors = {{.r = 200, .g = 200, .b = 200}, {.r = 0, .g = 255, .b = 255},
+{.r = 0, .g = 228, .b = 48}, {.r = 253, .g = 249, .b = 0}, {.r = 230, .g = 41, .b = 55}, {.r = 255, .g = 0, .b = 255}};
+
 void Logger::SetLogLevel(const LogLevel levelIn)
 {
 	std::scoped_lock lock(s_mutex);
