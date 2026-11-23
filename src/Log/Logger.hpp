@@ -110,7 +110,6 @@ public:
 		{
 			std::print(s_file, "{}", prefix);
 			(std::print(s_file, "{}", CheckOperator(std::forward<Args>(args))), ...);
-			std::println(s_file, "");
 		}
 
 		std::print(std::cerr, "{}{}", LevelColor(levelIn), prefix);
@@ -233,4 +232,36 @@ template <typename Object, LogLevel level = LogLevel::TRACE>
 void TraceAddress(const Object& object, const char* objectName)
 {
 	Logger::Write<level>(Demangle(typeid(object)), "\n", objectName, " address: ", &object);
+}
+
+template <typename... Args>
+void PrintToFile(const char* path, std::ios_base::openmode mode, Args&&... args)
+{
+	std::ofstream file;
+	file.open(path, mode);
+
+	if (file.is_open())
+	{
+		(std::print(file, "{}", CheckOperator(std::forward<Args>(args))), ...);
+		file.close();
+	}
+
+	else
+	{
+		Logger::Write<LogLevel::ERROR>("Could not open file to print: ", path);
+	}
+}
+
+template <typename... Args>
+void PrintToFile(std::ofstream& file, Args&&... args)
+{
+	if (file.is_open())
+	{
+		(std::print(file, "{}", CheckOperator(std::forward<Args>(args))), ...);
+	}
+
+	else
+	{
+		Logger::Write<LogLevel::ERROR>("File was not open to print to");
+	}
 }
